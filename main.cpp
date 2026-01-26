@@ -15,6 +15,7 @@ int main(int argc, char *argv[]) {
 
     ElfLoader loader{argv[1]};
     ElfParser parser{loader.getData()};
+    parser.parseSections();
 
     return 0;
 }

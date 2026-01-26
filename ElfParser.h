@@ -17,6 +17,18 @@ public:
         validate();
     }
 
+    void parseSections() const {
+        for (int i = 0; i < header->e_shnum; i++) {
+            const auto offset = header->e_shoff + (i * header->e_shentsize);
+            auto sectionHeader{reinterpret_cast<const Elf64_Shdr *>(&data[offset])};
+            auto name = getSectionName(sectionHeader->sh_name);
+
+            std::string nameStr = (name) ? name : "<null>";
+            std::cout << "Found " << nameStr << " at offset 0x" << std::hex << sectionHeader->sh_offset << "\n";
+            std::cout << std::dec;
+        }
+    }
+
 private:
     const std::vector<char> data;
     const Elf64_Ehdr *header;
@@ -40,6 +52,14 @@ private:
             exit(1);
         }
     }
+
+    [[nodiscard]] const char *getSectionName(int nameOffset) const {
+        const auto offset = header->e_shoff + (header->e_shstrndx * header->e_shentsize);
+        auto stringHeader{reinterpret_cast<const Elf64_Shdr *>(&data[offset])};
+        auto d{reinterpret_cast<const char *>(&data[stringHeader->sh_offset])};
+        return &d[nameOffset];
+    }
+
 };
 
 
