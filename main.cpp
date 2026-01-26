@@ -5,6 +5,7 @@
 #include <span>
 #include <vector>
 #include "ElfLoader.h"
+#include "ElfParser.h"
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -13,6 +14,7 @@ int main(int argc, char *argv[]) {
     }
 
     ElfLoader loader{argv[1]};
+    ElfParser parser{loader.getData()};
 
     return 0;
 }
