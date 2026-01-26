@@ -24,8 +24,16 @@ public:
             auto name = getSectionName(sectionHeader->sh_name);
 
             std::string nameStr = (name) ? name : "<null>";
-            std::cout << "Found " << nameStr << " at offset 0x" << std::hex << sectionHeader->sh_offset << "\n";
-            std::cout << std::dec;
+            std::cout << "Found " << nameStr << " at offset 0x" << std::hex << std::setfill('0') << sectionHeader->sh_offset << "\n";
+
+            if (sectionHeader->sh_type != SHT_NOBITS) {
+                for (int j = 0; j < sectionHeader->sh_size; j++) {
+                    auto byte = static_cast<unsigned char>(data[sectionHeader->sh_offset + j]);
+                    std::cout << std::setw(2) << static_cast<int>(byte) << " ";
+                }
+            }
+
+            std::cout << std::dec << "\n\n";
         }
     }
 
