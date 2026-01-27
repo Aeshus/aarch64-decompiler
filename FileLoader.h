@@ -1,22 +1,19 @@
-#ifndef DECOMPILER_ELFLOADER_H
-#define DECOMPILER_ELFLOADER_H
+#ifndef DECOMPILER_OBJECTLOADER_H
+#define DECOMPILER_OBJECTLOADER_H
 
 #include <filesystem>
 #include <fstream>
 #include <ios>
-#include <iostream>
-#include <string>
 #include <vector>
 
-class ElfLoader {
+class FileLoader {
 public:
-    explicit ElfLoader(const std::string &path) {
+    explicit FileLoader(const std::filesystem::path &path) {
         std::ifstream file{path, std::ios::binary};
         file.unsetf(std::ios::skipws);
 
         if (!file) {
-            std::cerr << "Error opening file: " << path;
-            exit(1);
+            throw std::runtime_error("The file from path does not exist");
         }
 
         const auto size = std::filesystem::file_size(path);
@@ -25,11 +22,8 @@ public:
         file.read(data.data(), size);
     }
 
-    [[nodiscard]] const std::vector<char> &getData() const { return data; }
-
 private:
     std::vector<char> data{};
 };
 
-
-#endif //DECOMPILER_ELFLOADER_H
+#endif //DECOMPILER_OBJECTLOADER_H

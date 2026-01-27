@@ -1,11 +1,7 @@
-#include <elf.h>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <span>
-#include <vector>
-#include "ElfLoader.h"
-#include "ElfParser.h"
+#include "FileLoader.h"
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -13,9 +9,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    ElfLoader loader{argv[1]};
-    ElfParser parser{loader.getData()};
-    parser.parseSections();
+    FileLoader file{argv[1]};
 
     return 0;
 }

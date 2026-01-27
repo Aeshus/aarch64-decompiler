@@ -4,5 +4,5 @@ project(decompiler)
 set(CMAKE_CXX_STANDARD 20)
 
 add_executable(decompiler main.cpp
-        ElfLoader.h
-        ElfParser.h)
+        FileLoader.h
+)
