@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <ios>
+#include <span>
 #include <vector>
 
 class FileLoader {
@@ -20,6 +21,10 @@ public:
         data.resize(size);
 
         file.read(data.data(), size);
+    }
+
+    std::span<char> getData() {
+        return data;
     }
 
 private:
