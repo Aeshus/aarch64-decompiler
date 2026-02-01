@@ -6,7 +6,8 @@
 
 class Elf {
 public:
-    explicit Elf(FileLoader loader) {
+    explicit Elf(std::filesystem::path &path) {
+        FileLoader loader{path};
         ElfHeader header{loader.getData()};
     }
 };

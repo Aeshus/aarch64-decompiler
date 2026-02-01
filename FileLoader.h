@@ -1,36 +1,67 @@
 #ifndef DECOMPILER_OBJECTLOADER_H
 #define DECOMPILER_OBJECTLOADER_H
 
-#include <filesystem>
-#include <fstream>
-#include <ios>
+#include <string>
 #include <span>
-#include <vector>
+#include <cstddef>
+#include <stdexcept>
+#include <filesystem>
+#include <optional>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 class FileLoader {
 public:
     explicit FileLoader(const std::filesystem::path &path) {
-        std::ifstream file{path, std::ios::binary | std::ios::ate};
-
-        if (!file) {
-            throw std::runtime_error(
-                "The file does not exist: " + path.string());
-        }
-
-        const auto size = file.tellg();
-        data.resize(size);
-
-        if (!file.read(data.data(), size)) {
-            throw std::runtime_error("Unable to read file: " + path.string());
-        }
+        load(path);
     }
 
-    std::span<const char> getData() {
-        return data;
+    ~FileLoader() {
+        unload();
+    }
+
+    std::span<const std::byte> getData() {
+        if (!data) return {};
+        return {static_cast<const std::byte *>(data), size};
     }
 
 private:
-    std::vector<char> data{};
+    int fd{-1};
+    void *data{nullptr};
+    size_t size{};
+
+    void load(const std::filesystem::path &path) {
+        fd = open(path.c_str(), O_RDONLY);
+        if (fd == -1) {
+            throw std::runtime_error("Failed to open the file: " + path.string());
+        }
+
+        struct stat sb{};
+        if (!fstat(fd, &sb)) {
+            close(fd);
+            throw std::runtime_error("Failed to get the size of: " + path.string());
+        }
+
+        size = static_cast<size_t>(sb.st_size);
+        if (size == 0) {
+            throw std::runtime_error("The size of the file is 0: " + path.string());
+        }
+
+        data = mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0);
+        if (data == nullptr || data == MAP_FAILED) {
+            close(fd);
+            throw std::runtime_error("Failed to mmap the file: " + path.string());
+        }
+    }
+
+    void unload() const {
+        if (data != nullptr && data != MAP_FAILED)
+            munmap(data, size);
+        if (fd != -1)
+            close(fd);
+    }
 };
 
 #endif //DECOMPILER_OBJECTLOADER_H
