@@ -22,9 +22,9 @@ public:
         unload();
     }
 
-    std::span<const std::byte> getData() {
+    std::span<const char> getData() {
         if (!data) return {};
-        return {static_cast<const std::byte *>(data), size};
+        return {static_cast<const char*>(data), size};
     }
 
 private:
@@ -39,7 +39,7 @@ private:
         }
 
         struct stat sb{};
-        if (!fstat(fd, &sb)) {
+        if (fstat(fd, &sb) == -1) {
             close(fd);
             throw std::runtime_error("Failed to get the size of: " + path.string());
         }
