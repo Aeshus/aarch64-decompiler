@@ -7,4 +7,5 @@ add_executable(decompiler main.cpp
         FileLoader.h
         Elf.h
         ElfHeader.h
+        ElfSection.h
 )

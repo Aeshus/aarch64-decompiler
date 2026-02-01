@@ -182,124 +182,40 @@ public:
 
         const auto arch = static_cast<int>(data[EI_CLASS]);
         if (arch == ELFCLASS32) {
-            if (data.size_bytes() < sizeof(Elf32_Ehdr))
-                throw std::runtime_error("The file is not large enough to fit a 32-bit ELF file");
-
-            Elf32_Ehdr h;
-            std::memcpy(&h, data.data(), sizeof(Elf32_Ehdr));
-            header = h;
-        } else if (arch == ELFCLASS64) {
-            if (data.size_bytes() < sizeof(Elf64_Ehdr))
-                throw std::runtime_error("The file is not large enough to fit a 64-bit ELF file");
-
-            Elf64_Ehdr h;
-            std::memcpy(&h, data.data(), sizeof(Elf64_Ehdr));
-            header = h;
-        } else {
-            throw std::runtime_error("File architecture class is unknown.");
+            throw std::runtime_error("32-bit ELFs are not supported");
         }
+
+        if (data.size_bytes() < sizeof(Elf64_Ehdr))
+            throw std::runtime_error("The file is not large enough to fit a 64-bit ELF file");
+
+        Elf64_Ehdr h;
+        header = h;
 
         parse();
     }
 
 private:
-    std::variant<Elf64_Ehdr, Elf32_Ehdr> header{};
-
-    unsigned char getIdentData(int index) {
-        return std::visit([index](const auto &hdr) {
-            return hdr.e_ident[index];
-        }, header);
-    }
-
-    uint16_t getMachine() {
-        return std::visit([](const auto &hdr) {
-            return hdr.e_machine;
-        }, header);
-    }
-
-    uint64_t getEntry() {
-        if (is64bit()) {
-            return std::get<Elf64_Ehdr>(header).e_entry;
-        }
-
-        return std::get<Elf32_Ehdr>(header).e_entry;
-    }
-
-    uint64_t getProgramOffset() {
-        if (is64bit()) {
-            return std::get<Elf64_Ehdr>(header).e_phoff;
-        }
-
-        return std::get<Elf32_Ehdr>(header).e_phoff;
-    }
-
-    uint64_t getSectionOffset() {
-        if (is64bit()) {
-            return std::get<Elf64_Ehdr>(header).e_shoff;
-        }
-
-        return std::get<Elf32_Ehdr>(header).e_shoff;
-    }
-
-    uint32_t getFlags() {
-        return std::visit([](const auto &hdr) {
-            return hdr.e_flags;
-        }, header);
-    }
-
-    uint16_t getProgramEntrySize() {
-        return std::visit([](const auto &hdr) {
-            return hdr.e_phentsize;
-        }, header);
-    }
-
-    uint16_t getProgramEntryCount() {
-        return std::visit([](const auto &hdr) {
-            return hdr.e_phnum;
-        }, header);
-    }
-
-    uint16_t getSectionEntrySize() {
-        return std::visit([](const auto &hdr) {
-            return hdr.e_shentsize;
-        }, header);
-    }
-
-    uint16_t getSectionEntryCount() {
-        return std::visit([](const auto &hdr) {
-            return hdr.e_shnum;
-        }, header);
-    }
-
-    uint16_t getSectionStringIndex() {
-        return std::visit([](const auto &hdr) {
-            return hdr.e_shstrndx;
-        }, header);
-    }
+    Elf64_Ehdr header{};
 
     void parse() {
         // Identifiers
-        elf_class = static_cast<ElfClass>(getIdentData(EI_CLASS));
-        elf_data = static_cast<ElfData>(getIdentData(EI_DATA));
-        elf_version = static_cast<ElfVersion>(getIdentData(EI_VERSION));
-        elf_os_abi = static_cast<ElfOSABI>(getIdentData(EI_OSABI));
-        elf_abi_version = getIdentData(EI_ABIVERSION);
+        elf_class = static_cast<ElfClass>(header.e_ident[EI_CLASS]);
+        elf_data = static_cast<ElfData>(header.e_ident[EI_DATA]);
+        elf_version = static_cast<ElfVersion>(header.e_ident[EI_VERSION]);
+        elf_os_abi = static_cast<ElfOSABI>(header.e_ident[EI_OSABI]);
+        elf_abi_version = header.e_ident[EI_ABIVERSION];
 
         // Rest of header
-        elf_machine = static_cast<ElfMachine>(getMachine());
-        elf_entry = getEntry();
-        elf_program_header_offset = getProgramOffset();
-        elf_section_header_offset = getSectionOffset();
-        elf_flags = getFlags();
-        elf_program_header_entry_size = getProgramEntrySize();
-        elf_program_header_entry_count = getProgramEntryCount();
-        elf_section_header_entry_size = getSectionEntrySize();
-        elf_section_header_entry_count = getSectionEntryCount();
-        elf_section_string_index = getSectionStringIndex();
-    }
-
-    [[nodiscard]] bool is64bit() const {
-        return std::holds_alternative<Elf64_Ehdr>(header);
+        elf_machine = static_cast<ElfMachine>(header.e_machine);
+        elf_entry = header.e_entry;
+        elf_program_header_offset = header.e_phoff;
+        elf_section_header_offset = header.e_shoff;
+        elf_flags = header.e_flags;
+        elf_program_header_entry_size = header.e_phentsize;
+        elf_program_header_entry_count = header.e_phnum;
+        elf_section_header_entry_size = header.e_shentsize;
+        elf_section_header_entry_count = header.e_shnum;
+        elf_section_string_index = header.e_shstrndx;
     }
 };
 

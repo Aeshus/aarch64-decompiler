@@ -1,6 +1,8 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+
+#include "ElfHeader.h"
 #include "FileLoader.h"
 
 int main(int argc, char *argv[]) {
