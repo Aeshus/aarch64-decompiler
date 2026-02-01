@@ -21,23 +21,25 @@ enum class Version {
 
 enum class OsAbi {
     SysV,
-    HpUX,
-    NetBSD,
     Linux,
-    Solaris,
-    Irix,
-    FreeBSD,
-    Tru64,
     Arm,
-    OpenBSD,
-    Modesto,
-    Aix,
     ArmEabi,
     Standalone,
 };
 
 enum class AbiVersion {
     Conforming,
+};
+
+enum class Type {
+    Relocatable,
+    Executable,
+    Shared,
+    Core
+};
+
+enum class Machine {
+    Aarch64,
 };
 
 class ElfHeader {
@@ -92,32 +94,14 @@ public:
 
     [[nodiscard]] OsAbi getOsAbi() const {
         switch (header->e_ident[EI_OSABI]) {
-            case ELFOSABI_AIX:
-                return OsAbi::Aix;
             case ELFOSABI_ARM:
                 return OsAbi::Arm;
             case ELFOSABI_ARM_AEABI:
                 return OsAbi::ArmEabi;
-            case ELFOSABI_FREEBSD:
-                return OsAbi::FreeBSD;
-            case ELFOSABI_HPUX:
-                return OsAbi::HpUX;
-            case ELFOSABI_IRIX:
-                return OsAbi::Irix;
-            case ELFOSABI_MODESTO:
-                return OsAbi::Modesto;
             case ELFOSABI_LINUX:
                 return OsAbi::Linux;
-            case ELFOSABI_NETBSD:
-                return OsAbi::NetBSD;
-            case ELFOSABI_OPENBSD:
-                return OsAbi::OpenBSD;
-            case ELFOSABI_SOLARIS:
-                return OsAbi::Solaris;
             case ELFOSABI_SYSV:
                 return OsAbi::SysV;
-            case ELFOSABI_TRU64:
-                return OsAbi::Tru64;
             case ELFOSABI_STANDALONE:
                 return OsAbi::Standalone;
             default:
@@ -134,7 +118,57 @@ public:
         }
     }
 
+    [[nodiscard]] Type getType() const {
+        switch (header->e_type) {
+            case ET_REL:
+                return Type::Relocatable;
+            case ET_EXEC:
+                return Type::Executable;
+            case ET_DYN:
+                return Type::Shared;
+            case ET_CORE:
+                return Type::Core;
+            default:
+                throw std::runtime_error("This ELF has an invalid type");
+        }
+    }
 
+    [[nodiscard]] Machine getMachine() const {
+        switch (header->e_machine) {
+            case EM_AARCH64:
+                return Machine::Aarch64;
+            default:
+                throw std::runtime_error("This ELF has an invalid machine");
+        }
+    }
+
+    [[nodiscard]] unsigned long getEntry() const {
+        return header->e_entry;
+    }
+
+    [[nodiscard]] unsigned long getProgramHeaderOffset() const {
+        return header->e_phoff;
+    }
+
+    [[nodiscard]] unsigned long getSectionHeaderOffset() const {
+        return header->e_shoff;
+    }
+
+    [[nodiscard]] unsigned int getFlags() const {
+        return header->e_flags;
+    }
+
+    [[nodiscard]] unsigned short int getElfHeaderSize() const {
+        return header->e_ehsize;
+    }
+
+    [[nodiscard]] unsigned short int getProgramHeaderSize() const {
+        return header->e_phentsize;
+    }
+
+    [[nodiscard]] unsigned short int getProgramHeaderCount() const {
+        return header->e_phnum;z
+    }
 
 private:
     const Elf64_Ehdr *header;

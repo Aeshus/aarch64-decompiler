@@ -10,20 +10,22 @@
 class FileLoader {
 public:
     explicit FileLoader(const std::filesystem::path &path) {
-        std::ifstream file{path, std::ios::binary};
-        file.unsetf(std::ios::skipws);
+        std::ifstream file{path, std::ios::binary | std::ios::ate};
 
         if (!file) {
-            throw std::runtime_error("The file from path does not exist");
+            throw std::runtime_error(
+                "The file does not exist: " + path.string());
         }
 
-        const auto size = std::filesystem::file_size(path);
+        const auto size = file.tellg();
         data.resize(size);
 
-        file.read(data.data(), size);
+        if (!file.read(data.data(), size)) {
+            throw std::runtime_error("Unable to read file: " + path.string());
+        }
     }
 
-    std::span<char> getData() {
+    std::span<const char> getData() {
         return data;
     }
 
