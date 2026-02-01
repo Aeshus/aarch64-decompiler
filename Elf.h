@@ -8,7 +8,8 @@ class Elf {
 public:
     explicit Elf(std::filesystem::path &path) {
         FileLoader loader{path};
-        ElfHeader header{loader.getData()};
+
+        ElfHeader header{loader.getData().subspan(0, sizeof(Elf64_Ehdr))};
     }
 };
 
