@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_executable(decompiler main.cpp
         Elf.h
-        ControlFlowGraph.h
 )
 
-target_link_libraries(decompiler capstone)
+target_link_libraries(decompiler)
