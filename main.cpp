@@ -16,22 +16,5 @@ int main(int const argc, char *const argv[]) {
 
     const char *path = argv[1];
 
-    const int fd = open(path, O_RDONLY);
-    if (fd == -1) {
-        close(fd);
-        std::cerr << FILE_OPEN_FAIL_MSG << path;
-    }
-
-    struct stat s{};
-    fstat(fd, &s);
-    if (fd == -1) {
-        close(fd);
-        std::cerr << FILE_OPEN_FAIL_MSG << path;
-    }
-
-    Elf elf{fd, s.st_size};
-
-    std::unique_ptr<Elf64_Ehdr> header = elf.getHeader();
-
     close(fd);
 }
