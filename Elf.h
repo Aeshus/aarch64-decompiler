@@ -1,8 +1,8 @@
 #ifndef DECOMPILER_ELF_H
 #define DECOMPILER_ELF_H
 
+#include <sys/mman.h>
 #include <memory>
-
 #include "elf.h"
 
 class Elf {
@@ -10,27 +10,16 @@ class Elf {
     long int const sz;
 
 public:
-    explicit Elf(int const fd, long int const sz) : fd(fd), sz(sz) {
-    }
-
-    std::unique_ptr<Elf64_Ehdr> getHeader() {
-        if (sz < sizeof(Elf64_Ehdr))
-            return nullptr;
-
-        auto header = std::make_unique<Elf64_Ehdr>();
-
-        if (read(fd, header.get(), sizeof(Elf64_Ehdr)) != sizeof(Elf64_Ehdr)) {
-            return nullptr;
+    explicit Elf(int const fd, long int const sz) : fd(fd), sz(sz), data(nullptr) {
+        data = static_cast<char *>(mmap(nullptr, sz, PROT_READ, MAP_SHARED, fd, 0));
+        if (data == nullptr || data == MAP_FAILED) {
+            std::cerr << "mmap failed";
+            exit(2);
         }
-
-        return header;
     }
 
-    // What API do I need?
-    // Find section
-    // Get elf header
-    // Get program header
-    // Search up symbols from symbol table
+private:
+    char *data;
 };
 
-#endif //DECOMPILER_ELF_H
+#endif
