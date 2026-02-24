@@ -1,0 +1,6 @@
+#ifndef DECOMPILER_CFG_H
+#define DECOMPILER_CFG_H
+
+
+
+#endif //DECOMPILER_CFG_H
