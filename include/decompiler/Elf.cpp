@@ -7,8 +7,10 @@
 bool Elf::is_elf() const {
     auto header = reinterpret_cast<Elf64_Ehdr *>(data);
 
-    return header->e_ident[EI_MAG0] == ELFMAG0 && header->e_ident[EI_MAG1] == ELFMAG1
-           && header->e_ident[EI_MAG2] == ELFMAG2 && header->e_ident[EI_MAG3] == ELFMAG3;
+    return header->e_ident[EI_MAG0] == ELFMAG0 && header->e_ident[EI_MAG1] ==
+           ELFMAG1
+           && header->e_ident[EI_MAG2] == ELFMAG2 && header->e_ident[EI_MAG3] ==
+           ELFMAG3;
 }
 
 bool Elf::is_64bit() const {
@@ -24,9 +26,11 @@ bool Elf::is_aarch64() const {
 }
 
 char *Elf::addr_to_real_ptr(const Elf64_Addr addr) {
-    for (const auto table = get_program_header_table(); const auto phdr: table) {
+    for (const auto table = get_program_header_table(); const auto phdr:
+         table) {
         if (phdr->p_type == PT_LOAD) {
-            if (addr >= phdr->p_vaddr && addr < (phdr->p_vaddr + phdr->p_memsz)) {
+            if (addr >= phdr->p_vaddr && addr < (
+                    phdr->p_vaddr + phdr->p_memsz)) {
                 const uint64_t offset = addr - phdr->p_vaddr + phdr->p_offset;
                 return data + offset;
             }
@@ -47,7 +51,9 @@ std::vector<Elf64_Phdr *> Elf::get_program_header_table() const {
     std::vector<Elf64_Phdr *> v{};
 
     for (int i = 0; i < header->e_phnum; i++) {
-        v.push_back(reinterpret_cast<Elf64_Phdr *>(data + header->e_phoff + header->e_phentsize * i));
+        v.push_back(
+            reinterpret_cast<Elf64_Phdr *>(
+                data + header->e_phoff + header->e_phentsize * i));
     }
 
     return v;
@@ -59,7 +65,9 @@ std::vector<Elf64_Shdr *> Elf::get_section_header_table() const {
     std::vector<Elf64_Shdr *> v{};
 
     for (int i = 0; i < header->e_shnum; i++) {
-        v.push_back(reinterpret_cast<Elf64_Shdr *>(data + header->e_shoff + header->e_shentsize * i));
+        v.push_back(
+            reinterpret_cast<Elf64_Shdr *>(
+                data + header->e_shoff + header->e_shentsize * i));
     }
 
     return v;
@@ -85,4 +93,19 @@ std::vector<char *> Elf::get_string_table() const {
     }
 
     return v;
+}
+
+std::vector<Elf64_Shdr *> Elf::get_executable_sections() const {
+    std::vector<Elf64_Shdr *> copy;
+    for (auto section : get_section_header_table()) {
+        if (section->sh_flags != SHF_EXECINSTR)
+            continue;
+
+        if (section->sh_size != 0)
+            continue;
+
+        copy.push_back(section);
+    }
+
+    return copy;
 }

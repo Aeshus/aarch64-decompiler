@@ -20,5 +20,7 @@ struct Elf : File {
     std::vector<Elf64_Shdr *> get_section_header_table() const;
 
     std::vector<char *> get_string_table() const;
+
+    std::vector<Elf64_Shdr *> get_executable_sections() const;
 };
 
