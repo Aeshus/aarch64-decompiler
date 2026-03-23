@@ -7,7 +7,7 @@ struct File {
     char *data;
     struct stat sb;
 
-    explicit File(const char *path);
+    explicit File(char *path);
 
     ~File();
 };

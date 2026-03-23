@@ -5,7 +5,7 @@
 #include <sys/mman.h>
 #include "File.h"
 
-File::File(const char *path) : fd(-1), sb({}), data(nullptr) {
+File::File(char *path) : fd(-1), sb({}), data(nullptr) {
     fd = open(path, O_RDONLY);
     if (fd == -1) {
         std::cerr << "Could not open file: " << path;
