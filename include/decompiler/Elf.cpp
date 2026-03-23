@@ -70,11 +70,19 @@ std::vector<char *> Elf::get_string_table() const {
     const auto sections = get_section_header_table();
 
     auto strsection = sections.at(header->e_shstrndx);
-    auto start = data + strsection->sh_offset;
 
     std::vector<char *> v{};
 
-    // todo
+    auto start = data + strsection->sh_offset;
+    auto end = start + strsection->sh_size;
+    auto i = 0;
+    while (start <= end) {
+        if (*(start + (i++)) == '\0') {
+            v.push_back(start);
+            start = start + i;
+            i = 1;
+        }
+    }
 
     return v;
 }
