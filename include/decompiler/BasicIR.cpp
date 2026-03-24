@@ -5,8 +5,8 @@
 #include "BasicIR.h"
 
 #include <stdexcept>
+#include <utility>
 #include <capstone/capstone.h>
-#include <inttypes.h>
 #include "Elf.h"
 
 BasicIRInstruction::BasicIRInstruction(cs_insn instruction) {
@@ -14,13 +14,14 @@ BasicIRInstruction::BasicIRInstruction(cs_insn instruction) {
 }
 
 
-BasicIRInstructionBlock::BasicIRInstructionBlock(uint64_t address,
+BasicIRInstructionBlock::BasicIRInstructionBlock(const uint64_t address,
                                                  std::vector<BasicIRInstruction>
-                                                 instructions) : address(
-    address), instructions(instructions) {
+                                                 instructions) : instructions(
+        std::move(instructions)), address(
+        address) {
 }
 
-BasicIR::BasicIR(Elf elf) : blocks({}) {
+BasicIR::BasicIR(const Elf &elf) : blocks({}) {
     auto sections = elf.get_executable_sections();
 
     csh handle;
@@ -37,16 +38,10 @@ BasicIR::BasicIR(Elf elf) : blocks({}) {
                                  section->sh_addr, 0,
                                  &insn);
 
-        for (int i = 0; i < count; i++) {
-            printf("0x%" PRIx64 ":\t%s\t\t%s\n", insn[i].address, insn[i].mnemonic,
-                insn[i].op_str);
-        }
-
         std::vector<cs_insn> ins{insn, insn + count};
 
         std::vector<BasicIRInstruction> v{};
         for (auto i: ins) {
-
             BasicIRInstruction is{i};
             v.push_back(is);
         }

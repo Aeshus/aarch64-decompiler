@@ -40,7 +40,7 @@ struct BasicIRInstructionBlock {
 struct BasicIR {
     std::vector<BasicIRInstructionBlock> blocks;
 
-    BasicIR(Elf elf);
+    BasicIR(const Elf& elf);
 };
 
 
