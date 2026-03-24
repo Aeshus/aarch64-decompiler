@@ -6,6 +6,7 @@
 
 #include <stdexcept>
 #include <capstone/capstone.h>
+#include <inttypes.h>
 #include "Elf.h"
 
 BasicIRInstruction::BasicIRInstruction(cs_insn instruction) {
@@ -24,22 +25,28 @@ BasicIR::BasicIR(Elf elf) : blocks({}) {
 
     csh handle;
 
-    if (cs_open(CS_ARCH_X86, CS_MODE_64, &handle) != CS_ERR_OK) {
+    if (cs_open(CS_ARCH_ARM64, CS_MODE_LITTLE_ENDIAN, &handle) != CS_ERR_OK) {
         throw std::runtime_error("Couldn't open capstone");
     }
 
     for (auto section: sections) {
-        auto start = reinterpret_cast<uint8_t *>(section + sizeof(Elf64_Shdr));
+        auto start = reinterpret_cast<uint8_t *>(elf.data + section->sh_offset);
         cs_insn *insn;
 
         size_t count = cs_disasm(handle, start, section->sh_size,
                                  section->sh_addr, 0,
                                  &insn);
 
+        for (int i = 0; i < count; i++) {
+            printf("0x%" PRIx64 ":\t%s\t\t%s\n", insn[i].address, insn[i].mnemonic,
+                insn[i].op_str);
+        }
+
         std::vector<cs_insn> ins{insn, insn + count};
 
         std::vector<BasicIRInstruction> v{};
         for (auto i: ins) {
+
             BasicIRInstruction is{i};
             v.push_back(is);
         }
