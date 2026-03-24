@@ -9,6 +9,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include "BasicIR.h"
 #include "Elf.h"
 
 #define USAGE_MSG "usage:\n" \
@@ -37,10 +38,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    auto strings = elf.get_string_table();
-    for (char *string : strings) {
-        std::cout << string << "\n";
-    }
+    BasicIR ir{elf};
 
     return EXIT_SUCCESS;
 }

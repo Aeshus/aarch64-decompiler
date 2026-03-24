@@ -25,22 +25,23 @@ struct BasicIRInstruction {
     std::optional<std::string> second;
     std::optional<std::string> operand;
 
-    BasicIRInstruction(cs_insn instruction);
+    explicit BasicIRInstruction(cs_insn instruction);
 };
 
 struct BasicIRInstructionBlock {
     std::vector<BasicIRInstruction> instructions;
     uint64_t address;
 
-    BasicIRInstructionBlock(uint64_t address,
-                            std::vector<BasicIRInstruction> instructions);
+    explicit BasicIRInstructionBlock(uint64_t address,
+                                     std::vector<BasicIRInstruction>
+                                     instructions);
 };
 
 
 struct BasicIR {
     std::vector<BasicIRInstructionBlock> blocks;
 
-    BasicIR(const Elf& elf);
+    explicit BasicIR(const Elf &elf);
 };
 
 

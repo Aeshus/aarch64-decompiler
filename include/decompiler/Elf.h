@@ -11,9 +11,9 @@ struct Elf : File {
 
     [[nodiscard]] bool is_aarch64() const;
 
-    char *addr_to_real_ptr(Elf64_Addr addr);
+    char *addr_to_real_ptr(Elf64_Addr addr) const;
 
-    char *get_entry_point();
+    char *get_entry_point() const;
 
     [[nodiscard]] std::vector<Elf64_Phdr *> get_program_header_table() const;
 

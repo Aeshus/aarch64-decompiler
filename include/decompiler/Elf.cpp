@@ -4,10 +4,8 @@
 
 #include "Elf.h"
 
-#include <cstdio>
-
 bool Elf::is_elf() const {
-    auto header = reinterpret_cast<Elf64_Ehdr *>(data);
+    const auto header = reinterpret_cast<Elf64_Ehdr *>(data);
 
     return header->e_ident[EI_MAG0] == ELFMAG0 && header->e_ident[EI_MAG1] ==
            ELFMAG1
@@ -16,18 +14,18 @@ bool Elf::is_elf() const {
 }
 
 bool Elf::is_64bit() const {
-    auto header = reinterpret_cast<Elf64_Ehdr *>(data);
+    const auto header = reinterpret_cast<Elf64_Ehdr *>(data);
 
     return header->e_ident[EI_CLASS] == ELFCLASS64;
 }
 
 bool Elf::is_aarch64() const {
-    auto header = reinterpret_cast<Elf64_Ehdr *>(data);
+    const auto header = reinterpret_cast<Elf64_Ehdr *>(data);
 
     return header->e_machine == EM_AARCH64;
 }
 
-char *Elf::addr_to_real_ptr(const Elf64_Addr addr) {
+char *Elf::addr_to_real_ptr(const Elf64_Addr addr) const {
     for (const auto table = get_program_header_table(); const auto phdr:
          table) {
         if (phdr->p_type == PT_LOAD) {
@@ -42,7 +40,7 @@ char *Elf::addr_to_real_ptr(const Elf64_Addr addr) {
     return nullptr;
 }
 
-char *Elf::get_entry_point() {
+char *Elf::get_entry_point() const {
     const auto header = reinterpret_cast<Elf64_Ehdr *>(data);
     return addr_to_real_ptr(header->e_entry);
 }
@@ -100,7 +98,7 @@ std::vector<char *> Elf::get_string_table() const {
 std::vector<Elf64_Shdr *> Elf::get_executable_sections() const {
     std::vector<Elf64_Shdr *> copy{};
 
-    for (auto section : get_section_header_table()) {
+    for (auto section: get_section_header_table()) {
         if (!(section->sh_flags & SHF_EXECINSTR))
             continue;
 
