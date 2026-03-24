@@ -4,6 +4,8 @@
 
 #include "Elf.h"
 
+#include <cstdio>
+
 bool Elf::is_elf() const {
     auto header = reinterpret_cast<Elf64_Ehdr *>(data);
 
@@ -96,12 +98,13 @@ std::vector<char *> Elf::get_string_table() const {
 }
 
 std::vector<Elf64_Shdr *> Elf::get_executable_sections() const {
-    std::vector<Elf64_Shdr *> copy;
+    std::vector<Elf64_Shdr *> copy{};
+
     for (auto section : get_section_header_table()) {
-        if (section->sh_flags != SHF_EXECINSTR)
+        if (!(section->sh_flags & SHF_EXECINSTR))
             continue;
 
-        if (section->sh_size != 0)
+        if (section->sh_size == 0)
             continue;
 
         copy.push_back(section);
