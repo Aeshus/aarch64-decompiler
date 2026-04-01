@@ -15,13 +15,13 @@
 #define USAGE_MSG "usage:\n" \
     "decompiler [file]"
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     if (argc != 2) {
         std::cerr << USAGE_MSG;
         return EXIT_FAILURE;
     }
 
-    Elf elf{File(argv[1])};
+    const Elf elf{File(argv[1])};
 
     if (!elf.is_elf()) {
         std::cerr << "File is not an ELF: " << argv[1];
